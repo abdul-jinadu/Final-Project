@@ -3,8 +3,16 @@ import java.util.Scanner;
 public class RestaurantMenu {
     private final MenuItems[] items = {
         new MenuItems("Burger", 8.99, "Food"),
+        new MenuItems("Pizza", 12.99, "Food"),
+        new MenuItems("Chicken Sandwich", 9.99, "Food"),
         new MenuItems("Soda", 2.50, "Drink"),
-        new MenuItems("Fries", 3.99, "Side")
+        new MenuItems("Water", 1.00, "Drink"),
+        new MenuItems("Juice", 2.50, "Drink"),
+        new MenuItems("Fries", 4.99, "Side"),
+        new MenuItems("Tater Tots", 3.99, "Side"),
+        new MenuItems("Cheesecake", 6.99, "Dessert"),
+        new MenuItems("Ice Cream", 3.99, "Dessert")
+
     };
 
     public void start() {

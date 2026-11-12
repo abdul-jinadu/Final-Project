@@ -3,10 +3,10 @@ public class Payment {
     private double tip;
     private double total;
 
-    public Payment(Order order, double tipPercentage) {
+    public Payment(Order order, double tipPercentage, String paymentMethod) {
         double subtotal = order.calculateSubtotal();
 
-        tax = subtotal * 0.6;
+        tax = subtotal * 0.06;
         tip = subtotal * (tipPercentage / 100);
         total = subtotal + tax + tip;
     }
@@ -27,6 +27,7 @@ public class Payment {
         System.out.printf("Tax: $%.2f%n", tax);
         System.out.printf("Tip: $%.2f%n", tip);
         System.out.printf("Total: $%.2f%n", total);
-         System.out.println("Payment Method: " + paymentMethod);
+        System.out.println("Payment Method: " + paymentMethod);
     }
+    
 }

@@ -1,4 +1,3 @@
-
 public class MenuItems {
     private String name;
     private double price;
