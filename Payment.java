@@ -2,9 +2,11 @@ public class Payment {
     private double tax;
     private double tip;
     private double total;
+    private String paymentMethod;
 
     public Payment(Order order, double tipPercentage, String paymentMethod) {
-        double subtotal = order.calculateSubtotal();
+        double subtotal = order.getSubtotal();
+        this.paymentMethod = paymentMethod;
 
         tax = subtotal * 0.06;
         tip = subtotal * (tipPercentage / 100);

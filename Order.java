@@ -3,7 +3,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Order {
-    private enum Status {
+    public enum Status {
         PENDING, PREPARING, COMPLETED
     }
 
