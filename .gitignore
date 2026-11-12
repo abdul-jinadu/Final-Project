@@ -1,0 +1,7 @@
+*.class
+bin/
+lib/*.jar
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
