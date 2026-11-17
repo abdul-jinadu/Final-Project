@@ -3,7 +3,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Order {
-    private enum Status {
+    public enum Status {
         PENDING, PREPARING, COMPLETED
     }
 
@@ -21,6 +21,17 @@ public class Order {
 
     public List<LineItem> getItems() {
         return Collections.unmodifiableList(items);
+    }
+
+    // How many of one menu item are already in this order (used for stock checks).
+    public int getQuantityOf(MenuItems item) {
+        int total = 0;
+        for (LineItem line : items) {
+            if (line.getItem() == item) {
+                total += line.getQuantity();
+            }
+        }
+        return total;
     }
 
     public double getSubtotal() {

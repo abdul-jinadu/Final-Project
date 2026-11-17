@@ -1,14 +1,71 @@
 public class Payment {
-    private double tax;
-    private double tip;
-    private double total;
+    public enum Method {
+        CASH, CARD
+    }
 
-    public Payment(Order order, double tipPercentage, String paymentMethod) {
-        double subtotal = order.calculateSubtotal();
+    private static final double TAX_RATE = 0.06;
 
-        tax = subtotal * 0.06;
-        tip = subtotal * (tipPercentage / 100);
-        total = subtotal + tax + tip;
+    private final double subtotal;
+    private final double tax;
+    private final double tip;
+    private final double total;
+    private final Method paymentMethod;
+
+    private double amountTendered;
+    private double change;
+    private String cardLastFour;
+    private boolean paid;
+
+    public Payment(Order order, double tipPercentage, Method paymentMethod) {
+        if (order == null || paymentMethod == null) {
+            throw new IllegalArgumentException("An order and a payment method are required.");
+        }
+        if (tipPercentage < 0) {
+            throw new IllegalArgumentException("The tip cannot be negative.");
+        }
+        this.paymentMethod = paymentMethod;
+
+        subtotal = order.getSubtotal();
+        tax = roundToCents(subtotal * TAX_RATE);
+        tip = roundToCents(subtotal * (tipPercentage / 100));
+        total = roundToCents(subtotal + tax + tip);
+    }
+
+    // Cash: returns true if the amount covers the total, and works out the change.
+    public boolean payWithCash(double amount) {
+        if (paymentMethod != Method.CASH) {
+            throw new IllegalStateException("This payment is not set up for cash.");
+        }
+        if (roundToCents(amount) < total) {
+            return false;
+        }
+        amountTendered = roundToCents(amount);
+        change = roundToCents(amountTendered - total);
+        paid = true;
+        return true;
+    }
+
+    // Card: only the last 4 digits are kept, for the receipt.
+    public boolean payWithCard(String lastFourDigits) {
+        if (paymentMethod != Method.CARD) {
+            throw new IllegalStateException("This payment is not set up for card.");
+        }
+        if (lastFourDigits == null || !lastFourDigits.trim().matches("\\d{4}")) {
+            return false;
+        }
+        cardLastFour = lastFourDigits.trim();
+        amountTendered = total;
+        change = 0.0;
+        paid = true;
+        return true;
+    }
+
+    private static double roundToCents(double amount) {
+        return Math.round(amount * 100) / 100.0;
+    }
+
+    public double getSubtotal() {
+        return subtotal;
     }
 
     public double getTax() {
@@ -23,11 +80,36 @@ public class Payment {
         return total;
     }
 
+    public Method getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public double getAmountTendered() {
+        return amountTendered;
+    }
+
+    public double getChange() {
+        return change;
+    }
+
+    public String getCardLastFour() {
+        return cardLastFour;
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
     public void displayPayment() {
         System.out.printf("Tax: $%.2f%n", tax);
         System.out.printf("Tip: $%.2f%n", tip);
         System.out.printf("Total: $%.2f%n", total);
         System.out.println("Payment Method: " + paymentMethod);
+        if (paid && paymentMethod == Method.CASH) {
+            System.out.printf("Cash given: $%.2f%n", amountTendered);
+            System.out.printf("Change: $%.2f%n", change);
+        } else if (paid && paymentMethod == Method.CARD) {
+            System.out.println("Card: **** **** **** " + cardLastFour);
+        }
     }
-    
 }
