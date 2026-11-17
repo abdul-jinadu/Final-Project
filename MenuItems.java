@@ -15,7 +15,7 @@ public class MenuItems {
         return name;
     }
 
-    // Here is where we get the price 
+    // Here is where we get the price
     public double getPrice() {
         return price;
     }
