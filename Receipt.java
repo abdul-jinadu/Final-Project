@@ -9,9 +9,17 @@ public class Receipt {
     private final Customer customer;
     private final Order order;
     private final Payment payment;
-    private final LocalDateTime time;
+    private final String orderDate;
+    private final String restaurantName;
+    private final boolean savedReceipt;
+    private final boolean receiptDetails;
 
     public Receipt(int orderId, Customer customer, Order order, Payment payment) {
+        this(orderId, customer, order, payment, "Restaurant", LocalDateTime.now().toString());
+    }
+
+    public Receipt(int orderId, Customer customer, Order order, Payment payment,
+                   String restaurantName, String orderDate) {
         if (customer == null || order == null || payment == null) {
             throw new IllegalArgumentException("A receipt needs a customer, an order and a payment.");
         }
@@ -19,7 +27,21 @@ public class Receipt {
         this.customer = customer;
         this.order = order;
         this.payment = payment;
-        this.time = LocalDateTime.now();
+        this.orderDate = orderDate;
+        this.restaurantName = restaurantName;
+        this.savedReceipt = false;
+        this.receiptDetails = true;
+    }
+
+    public Receipt(DatabaseManager.SavedOrder saved) {
+        this.orderId = saved.getOrderId();
+        this.customer = saved.getCustomer();
+        this.order = saved.getOrder();
+        this.payment = saved.getPayment();
+        this.orderDate = saved.getOrderDate();
+        this.restaurantName = saved.getRestaurantName();
+        this.savedReceipt = true;
+        this.receiptDetails = saved.hasReceiptDetails();
     }
 
     public void printReceipt() {
@@ -28,9 +50,10 @@ public class Receipt {
         System.out.println("\n" + LINE);
         System.out.println("              RECEIPT");
         System.out.println(LINE);
+        System.out.println("Restaurant: " + restaurantName);
         System.out.println("Order #: " + orderId);
         System.out.println("Customer: " + customer.getName());
-        System.out.println("Date: " + time.format(format));
+        System.out.println("Date: " + (receiptDetails ? LocalDateTime.parse(orderDate).format(format) : orderDate));
         System.out.println(DASHES);
         System.out.printf("%-4s %-20s %12s%n", "Qty", "Item", "Price");
         System.out.println(DASHES);
@@ -46,12 +69,21 @@ public class Receipt {
 
         System.out.println(DASHES);
         printRow("Subtotal:", payment.getSubtotal());
-        printRow("Tax (6%):", payment.getTax());
-        printRow("Tip:", payment.getTip());
-        printRow("TOTAL:", payment.getTotal());
+        if (receiptDetails) {
+            printRow("Tax (6%):", payment.getTax());
+            printRow("Tip:", payment.getTip());
+            printRow("TOTAL:", payment.getTotal());
+        } else {
+            System.out.println("Tax, tip, final paid total and payment");
+            System.out.println("method were not recorded for this order.");
+        }
         System.out.println(DASHES);
 
-        if (payment.getPaymentMethod() == Payment.Method.CASH) {
+        if (!receiptDetails) {
+            System.out.println("Historical item details are shown above.");
+        } else if (savedReceipt) {
+            System.out.println("Payment Method: " + payment.getPaymentMethod());
+        } else if (payment.getPaymentMethod() == Payment.Method.CASH) {
             printRow("Paid (Cash):", payment.getAmountTendered());
             printRow("Change:", payment.getChange());
         } else {

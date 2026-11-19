@@ -9,6 +9,19 @@ public class Order {
 
     private final List<LineItem> items = new ArrayList<>();
     private Status status = Status.PENDING;
+    private final int restaurantId;
+
+    public Order() {
+        this(0);
+    }
+
+    public Order(int restaurantId) {
+        this.restaurantId = restaurantId;
+    }
+
+    public int getRestaurantId() {
+        return restaurantId;
+    }
 
     public void addItem(MenuItems item, int quantity) {
         if (item == null || quantity < 1) {
@@ -27,8 +40,10 @@ public class Order {
     public int getQuantityOf(MenuItems item) {
         int total = 0;
         for (LineItem line : items) {
-            if (line.getItem() == item) {
-                total += line.getQuantity();
+            if (line.getItem() == item || (item.getItemId() > 0
+                    && line.getItem().getItemId() == item.getItemId()
+                    && line.getItem().getRestaurantId() == item.getRestaurantId())) {
+                total = Math.addExact(total, line.getQuantity());
             }
         }
         return total;
@@ -39,7 +54,10 @@ public class Order {
         for (LineItem line : items) {
             subtotal += line.getLineTotal();
         }
-        return subtotal;
+        if (!Double.isFinite(subtotal) || subtotal > Long.MAX_VALUE / 100.0) {
+            throw new IllegalArgumentException("The order total is too large.");
+        }
+        return Math.round(subtotal * 100) / 100.0;
     }
 
     public Status getStatus() {

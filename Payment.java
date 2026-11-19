@@ -20,15 +20,29 @@ public class Payment {
         if (order == null || paymentMethod == null) {
             throw new IllegalArgumentException("An order and a payment method are required.");
         }
-        if (tipPercentage < 0) {
+        if (!Double.isFinite(tipPercentage) || tipPercentage < 0) {
             throw new IllegalArgumentException("The tip cannot be negative.");
         }
         this.paymentMethod = paymentMethod;
 
-        subtotal = order.getSubtotal();
+        subtotal = roundToCents(order.getSubtotal());
+        if (!Double.isFinite(subtotal) || !Double.isFinite(subtotal * (tipPercentage / 100))
+                || subtotal * (tipPercentage / 100) > Long.MAX_VALUE / 100.0) {
+            throw new IllegalArgumentException("The payment amount is too large.");
+        }
         tax = roundToCents(subtotal * TAX_RATE);
         tip = roundToCents(subtotal * (tipPercentage / 100));
         total = roundToCents(subtotal + tax + tip);
+    }
+
+    // Saved receipts use the original amounts, without recalculating today's tax or tip.
+    public Payment(double subtotal, double tax, double tip, double total, Method method) {
+        this.subtotal = subtotal;
+        this.tax = tax;
+        this.tip = tip;
+        this.total = total;
+        this.paymentMethod = method;
+        this.paid = true;
     }
 
     // Cash: returns true if the amount covers the total, and works out the change.
@@ -36,7 +50,8 @@ public class Payment {
         if (paymentMethod != Method.CASH) {
             throw new IllegalStateException("This payment is not set up for cash.");
         }
-        if (roundToCents(amount) < total) {
+        if (!Double.isFinite(amount) || amount < 0 || amount > Long.MAX_VALUE / 100.0
+                || roundToCents(amount) < total) {
             return false;
         }
         amountTendered = roundToCents(amount);
@@ -61,6 +76,9 @@ public class Payment {
     }
 
     private static double roundToCents(double amount) {
+        if (!Double.isFinite(amount) || amount > Long.MAX_VALUE / 100.0) {
+            throw new IllegalArgumentException("The payment amount is too large.");
+        }
         return Math.round(amount * 100) / 100.0;
     }
 
