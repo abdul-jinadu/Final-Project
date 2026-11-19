@@ -1,7 +1,9 @@
 *.class
 bin/
 lib/*.jar
+!lib/sqlite-jdbc-3.53.4.0.jar
 *.db
+!restaurant.db
 *.db-journal
 *.db-wal
 *.db-shm
